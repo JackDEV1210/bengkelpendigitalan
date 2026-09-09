@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ms" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengkel Pembinaan Prompt untuk Guru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Arial', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            800: '#1e3a8a',
+                            900: '#0f172a',
+                        },
+                        amberWarm: {
+                            50: '#fffbe8',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom constrained chart container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 360px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 340px;
+            }
+        }
+        .tag-badge {
+            transition: all 0.2s ease-in-out;
+        }
+        .tag-badge:hover {
+            transform: translateY(-2px);
+        }
+
+
+        /* Gaya visual yang lebih tenang dan sesuai untuk bengkel pendidikan */
+        body { background: #f7f6f2 !important; }
+        header { background: rgba(255,255,255,.98) !important; backdrop-filter: none !important; }
+        .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm {
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 20px rgba(15, 23, 42, 0.05) !important;
+        }
+        .nav-tab { letter-spacing: 0; }
+        .tab-content > div { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.035) !important; }
+        h1, h2, h3 { letter-spacing: -0.01em; }
+        code { font-size: .95em; }
+    </style>
+</head>
+<body class="bg-[#fcfbf9] text-slate-800 font-sans antialiased selection:bg-brand-500 selection:text-white min-h-screen flex flex-col">
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 text-base sm:text-lg leading-tight">Bengkel Pembinaan Prompt</h1>
+                        <p class="text-xs text-slate-500 font-medium">Panduan praktikal guru • 80 minit</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                        <i class="fa-regular fa-clock mr-1.5"></i> 80 Minit Keseluruhan
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                        <i class="fa-solid fa-graduation-cap mr-1.5"></i> Guru Sekolah Menengah
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="bg-slate-100/80 border-t border-slate-200 overflow-x-auto no-scrollbar">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-1 sm:space-x-2 py-2 min-w-max">
+                <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-brand-600 text-white shadow-sm">
+                    <i class="fa-solid fa-chart-pie mr-1.5"></i> Gambaran Keseluruhan
+                </button>
+                <button onclick="switchTab('sesi1')" id="tab-btn-sesi1" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all">
+                    <i class="fa-solid fa-book-open mr-1.5 text-blue-500"></i> Sesi 1: Gemini
+                </button>
+                <button onclick="switchTab('sesi2')" id="tab-btn-sesi2" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all">
+                    <i class="fa-solid fa-image mr-1.5 text-emerald-500"></i> Sesi 2: ChatGPT
+                </button>
+                <button onclick="switchTab('sesi3')" id="tab-btn-sesi3" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all">
+                    <i class="fa-solid fa-palette mr-1.5 text-purple-500"></i> Sesi 3: Canva
+                </button>
+                <button onclick="switchTab('sesi4')" id="tab-btn-sesi4" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all">
+                    <i class="fa-solid fa-music mr-1.5 text-amber-500"></i> Sesi 4: Suno
+                </button>
+                <button onclick="switchTab('sesi5')" id="tab-btn-sesi5" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-all">
+                    <i class="fa-solid fa-brain mr-1.5 text-rose-500"></i> Sesi 5: NotebookLM
+                </button>
+                <button onclick="switchTab('studio')" id="tab-btn-studio" class="nav-tab px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-amber-500 text-slate-900 hover:bg-amber-400 transition-all shadow-sm">
+                    <i class="fa-solid fa-sliders mr-1.5"></i> Studio Bina Prompt
+                </button>
+            </div>
+        </div>
+    </header>
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div id="tab-dashboard" class="tab-content space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 text-slate-900 shadow-sm relative overflow-hidden">
+                <div class="relative z-10 max-w-3xl">
+                    <span class="inline-block text-sm font-semibold text-brand-700 mb-3">
+                        Bengkel Praktikal untuk Guru
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Pembinaan Prompt untuk Pendidik</h2>
+                    <p class="mt-3 text-slate-600 text-sm sm:text-base leading-relaxed">
+                        Modul ini disediakan untuk membantu guru sekolah menengah membina arahan yang lebih jelas dan berkesan bagi menghasilkan bahan bantu mengajar, visual, audio mnemonik dan bahan bacaan. Setiap bahagian boleh digunakan terus semasa ceramah atau aktiviti amali.
+                    </p>
+                    <div class="mt-6 flex flex-wrap gap-3 text-xs font-medium text-slate-600">
+                        <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg">
+                            <i class="fa-solid fa-layer-group text-amber-600"></i>
+                            <span>5 sesi bebas</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg">
+                            <i class="fa-solid fa-clock text-emerald-600"></i>
+                            <span>16 minit setiap sesi</span>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg">
+                            <i class="fa-solid fa-vial text-blue-600"></i>
+                            <span>Struktur prompt & contoh</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-amberWarm-50 border border-amberWarm-100 rounded-xl p-5 text-slate-700 text-sm leading-relaxed">
+                <h3 class="font-bold text-amber-800 text-base mb-1">
+                    <i class="fa-solid fa-circle-info mr-2"></i> Cara menggunakan modul
+                </h3>
+                 Bahagian ini memberi gambaran ringkas tentang pembahagian masa, fokus setiap aplikasi dan hasil yang akan dibina. Setiap sesi berdiri sendiri, jadi penceramah boleh memilih mana-mana sesi mengikut keperluan peserta tanpa perlu mengikuti urutan tertentu.
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Jumlah Masa</div>
+                    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900">80 Min</div>
+                    <div class="mt-1 text-xs text-slate-500">5 x 16 minit slot terasing</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Aplikasi</div>
+                    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-brand-600">5 Aplikasi</div>
+                    <div class="mt-1 text-xs text-slate-500">Gemini, ChatGPT, Canva, Suno dan NotebookLM</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Struktur Prompt</div>
+                    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-emerald-600">5 Formula</div>
+                    <div class="mt-1 text-xs text-slate-500">S-G-K-W-P-M, RTCC, Metatags & Source-Grounded</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                    <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Hasil Produk</div>
+                    <div class="mt-2 text-2xl sm:text-3xl font-extrabold text-purple-600">Pelbagai</div>
+                    <div class="mt-1 text-xs text-slate-500">Kulit Buku, Poster, Lagu & Podkas Audio</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-bold text-slate-900 text-base">Pembahagian Masa Sesi Ceramah</h3>
+                            <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-medium">16 Minit / Sesi</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">Setiap sesi dibahagikan kepada 4 fasa utama penyampaian ceramah interaktif.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="timeChart"></canvas>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 flex justify-around text-center">
+                        <div><span class="font-bold text-slate-800">3 Min:</span> Pengenalan</div>
+                        <div><span class="font-bold text-slate-800">5 Min:</span> Formula</div>
+                        <div><span class="font-bold text-slate-800">5 Min:</span> Demonstrasi</div>
+                        <div><span class="font-bold text-slate-800">3 Min:</span> Latihan / Soal jawab</div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-bold text-slate-900 text-base">Fokus Setiap Aplikasi</h3>
+                            <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-medium">Domain Kegunaan</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">Fokus penggunaan setiap aplikasi berdasarkan keperluan bahan pengajaran guru.</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="capabilityChart"></canvas>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500 text-center">
+                        Membantu guru memilih aplikasi yang sesuai mengikut objektif pembelajaran.
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-200 bg-slate-50/50">
+                    <h3 class="font-bold text-slate-900 text-base">Ringkasan Sesi Bengkel</h3>
+                    <p class="text-xs text-slate-500">Panduan pantas tajuk, aplikasi, struktur prompt dan hasil bagi setiap sesi 16 minit.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+                        <thead class="bg-slate-100 text-slate-800 uppercase text-[11px] font-bold tracking-wider">
+                            <tr>
+                                <th class="p-4">Sesi</th>
+                                <th class="p-4">Aplikasi</th>
+                                <th class="p-4">Hasil Utama</th>
+                                <th class="p-4">Struktur Utama</th>
+                                <th class="p-4 text-right">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Sesi 1</td>
+                                <td class="p-4 text-blue-600 font-semibold"><i class="fa-solid fa-sparkles mr-1"></i> Gemini</td>
+                                <td class="p-4">Kulit Buku Novel KOMSAS / Teks</td>
+                                <td class="p-4"><code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-xs">S-G-K-W-P-M</code></td>
+                                <td class="p-4 text-right">
+                                    <button onclick="switchTab('sesi1')" class="text-brand-600 hover:text-brand-800 font-bold text-xs hover:underline">Teroka <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Sesi 2</td>
+                                <td class="p-4 text-emerald-600 font-semibold"><i class="fa-solid fa-pen-to-square mr-1"></i> ChatGPT</td>
+                                <td class="p-4">Poster & Sepanduk (Banner) Program</td>
+                                <td class="p-4"><code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-xs">RTCC</code></td>
+                                <td class="p-4 text-right">
+                                    <button onclick="switchTab('sesi2')" class="text-brand-600 hover:text-brand-800 font-bold text-xs hover:underline">Teroka <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Sesi 3</td>
+                                <td class="p-4 text-purple-600 font-semibold"><i class="fa-solid fa-palette mr-1"></i> Canva</td>
+                                <td class="p-4">Grafik & Tipografi Modul Siap Cetak</td>
+                                <td class="p-4"><code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-xs">Objek+Gaya+Latar+Tona</code></td>
+                                <td class="p-4 text-right">
+                                    <button onclick="switchTab('sesi3')" class="text-brand-600 hover:text-brand-800 font-bold text-xs hover:underline">Teroka <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Sesi 4</td>
+                                <td class="p-4 text-amber-600 font-semibold"><i class="fa-solid fa-music mr-1"></i> Suno</td>
+                                <td class="p-4">Lagu & Jingle Mnemonik Pembelajaran</td>
+                                <td class="p-4"><code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-xs">Muzik + Metatags Lirik</code></td>
+                                <td class="p-4 text-right">
+                                    <button onclick="switchTab('sesi4')" class="text-brand-600 hover:text-brand-800 font-bold text-xs hover:underline">Teroka <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-4 font-bold text-slate-900">Sesi 5</td>
+                                <td class="p-4 text-rose-600 font-semibold"><i class="fa-solid fa-book-bookmark mr-1"></i> NotebookLM (Google)</td>
+                                <td class="p-4">Panduan Belajar, Kuiz & Podkas Audio</td>
+                                <td class="p-4"><code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono text-xs">Source-Grounded Prompting</code></td>
+                                <td class="p-4 text-right">
+                                    <button onclick="switchTab('sesi5')" class="text-brand-600 hover:text-brand-800 font-bold text-xs hover:underline">Teroka <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="tab-sesi1" class="tab-content hidden space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">SESI 1</span>
+                            <span class="text-xs text-slate-500 font-medium">Masa: 16 Minit</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Gemini – Reka Bentuk Kulit Buku Novel & Buku Teks</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg font-semibold text-slate-700">
+                            <i class="fa-solid fa-bullseye text-blue-500 mr-1"></i> Objektif: Prompt Visual Naratif
+                        </span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">
+                    Sesi ini membimbing guru membina arahan (<em>prompt</em>) visual berasaskan teks yang terperinci menggunakan <strong>Google Gemini</strong>. Gemini sangat berkesan apabila diberikan konteks penceritaan naratif yang kaya. Guru akan mempelajari cara menjana konsep visual kulit buku modul pelajaran atau novel KOMSAS dengan mengawal persekitaran visual melalui 6 elemen penting.
+                </p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center">
+                    <i class="fa-solid fa-list-check text-blue-600 mr-2"></i> Pelan Penyampaian Ceramah (16 Minit)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-blue-600">Minit 0 – 3</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Pengenalan Gemini</div>
+                        <div class="text-xs text-slate-500 mt-1">Kelebihan Gemini dalam visualisasi konsep sejarah & sastera.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-blue-600">Minit 3 – 8</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Formula S-G-K-W-P-M</div>
+                        <div class="text-xs text-slate-500 mt-1">Pembentangan formula dan definisi 6 elemen utama.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-blue-600">Minit 8 – 13</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Demonstrasi</div>
+                        <div class="text-xs text-slate-500 mt-1">Menjana konsep kulit buku modul secara langsung di Gemini.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-blue-600">Minit 13 – 16</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Aktiviti Pantas Guru</div>
+                        <div class="text-xs text-slate-500 mt-1">Guru mengisi tempat kosong dalam formula untuk tajuk mereka.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-1">Formula Gemini: S-G-K-W-P-M</h3>
+                    <p class="text-xs text-slate-500">Klik mana-mana elemen formula di bawah untuk melihat penjelasannya dan sorotan pada contoh prompt.</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs sm:text-sm overflow-x-auto">
+                    <div class="text-slate-400 mb-2 font-sans text-xs">Susunan prompt:</div>
+                    <div class="flex items-center space-x-1 sm:space-x-2 min-w-max">
+                        <span class="text-amber-400 font-bold">Formula</span> = 
+                        <button onclick="highlightTag('subjek', 'gemini')" class="bg-blue-600 hover:bg-blue-500 px-2.5 py-1 rounded font-bold transition-all">[Subjek]</button> +
+                        <button onclick="highlightTag('gaya', 'gemini')" class="bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1 rounded font-bold transition-all">[Gaya Seni]</button> +
+                        <button onclick="highlightTag('komposisi', 'gemini')" class="bg-purple-600 hover:bg-purple-500 px-2.5 py-1 rounded font-bold transition-all">[Komposisi/Susun Atur]</button> +
+                        <button onclick="highlightTag('warna', 'gemini')" class="bg-amber-600 hover:bg-amber-500 px-2.5 py-1 rounded font-bold transition-all">[Skema Warna]</button> +
+                        <button onclick="highlightTag('cahaya', 'gemini')" class="bg-rose-600 hover:bg-rose-500 px-2.5 py-1 rounded font-bold transition-all">[Pencahayaan]</button> +
+                        <button onclick="highlightTag('mood', 'gemini')" class="bg-teal-600 hover:bg-teal-500 px-2.5 py-1 rounded font-bold transition-all">[Mood]</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="font-bold text-blue-900"><i class="fa-solid fa-user-ninja mr-1"></i> [Subjek]</div>
+                        <div class="text-blue-800 mt-1">Watak, objek, atau fokus utama dalam imej.</div>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div class="font-bold text-emerald-900"><i class="fa-solid fa-paintbrush mr-1"></i> [Gaya Seni]</div>
+                        <div class="text-emerald-800 mt-1">Jenis lukisan/visual (cth: realistik, 3D, cat air, lukisan vektor digital).</div>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="font-bold text-purple-900"><i class="fa-solid fa-crop-simple mr-1"></i> [Komposisi/Susun Atur]</div>
+                        <div class="text-purple-800 mt-1">Kedudukan subjek & pembahagian ruang (cth: letak di tengah, negative space).</div>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <div class="font-bold text-amber-900"><i class="fa-solid fa-palette mr-1"></i> [Skema Warna]</div>
+                        <div class="text-amber-800 mt-1">Kombinasi warna utama (cth: warna pastel, hitam putih, emas dan coklat).</div>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-lg border border-rose-200">
+                        <div class="font-bold text-rose-900"><i class="fa-solid fa-sun mr-1"></i> [Pencahayaan]</div>
+                        <div class="text-rose-800 mt-1">Jenis & arah cahaya menerangi subjek (cth: matahari terbit, suram, lampu atas).</div>
+                    </div>
+                    <div class="p-3 bg-teal-50 rounded-lg border border-teal-200">
+                        <div class="font-bold text-teal-900"><i class="fa-solid fa-face-smile mr-1"></i> [Mood]</div>
+                        <div class="text-teal-800 mt-1">Emosi/suasana keseluruhan yang disampaikan (cth: gah, seram, gembira, elegan).</div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl relative shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-xs font-semibold text-amber-400">
+                            <i class="fa-solid fa-graduation-cap mr-1"></i> Contoh situasi: Guru Sejarah Tingkatan 4 (Modul Pembinaan Negara Bangsa)
+                        </div>
+                        <button onclick="copyToClipboard('gemini-prompt-text')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                            <i class="fa-regular fa-copy mr-1"></i> Salin Prompt
+                        </button>
+                    </div>
+
+                    <div id="gemini-prompt-text" class="font-mono text-xs sm:text-sm leading-relaxed space-y-2">
+                        <p class="text-slate-400">Salin prompt ini ke Gemini:</p>
+                        <p class="text-slate-200">Jana satu gambaran visual terperinci (image prompt) untuk kulit buku modul Sejarah Sekolah Menengah berdasarkan spesifikasi ini:</p>
+                        <p class="p-2 rounded bg-blue-950/60 border border-blue-800/50" id="gem-subjek"><span class="text-blue-400 font-bold">[Subjek]:</span> Siluet seorang pahlawan Melayu zaman Kesultanan Melayu Melaka memegang keris, berdiri di atas bukit memandang pelabuhan Melaka yang sibuk dengan kapal pedagang.</p>
+                        <p class="p-2 rounded bg-emerald-950/60 border border-emerald-800/50" id="gem-gaya"><span class="text-emerald-400 font-bold">[Gaya Seni]:</span> Ilustrasi digital moden (digital vector painting) dengan garisan kemas.</p>
+                        <p class="p-2 rounded bg-purple-950/60 border border-purple-800/50" id="gem-komposisi"><span class="text-purple-400 font-bold">[Komposisi/Susun Atur]:</span> Berikan ruang kosong (negative space) yang luas di 1/3 bahagian atas imej untuk saya meletakkan tajuk buku.</p>
+                        <p class="p-2 rounded bg-amber-950/60 border border-amber-800/50" id="gem-warna"><span class="text-amber-400 font-bold">[Skema Warna]:</span> Gabungan warna emas, coklat gelap, dan biru indigo.</p>
+                        <p class="p-2 rounded bg-rose-950/60 border border-rose-800/50" id="gem-cahaya"><span class="text-rose-400 font-bold">[Pencahayaan]:</span> Cahaya matahari terbit (golden hour) dari arah belakang pahlawan yang memberikan kesan siluet.</p>
+                        <p class="p-2 rounded bg-teal-950/60 border border-teal-800/50" id="gem-mood"><span class="text-teal-400 font-bold">[Mood]:</span> Gah, elegan, patriotik, dan premium.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-sesi2" class="tab-content hidden space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">SESI 2</span>
+                            <span class="text-xs text-slate-500 font-medium">Masa: 16 Minit</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">ChatGPT – Reka Bentuk Poster & Sepanduk</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg font-semibold text-slate-700">
+                            <i class="fa-solid fa-bullseye text-emerald-500 mr-1"></i> Objektif: Kaedah RTCC & Spesifikasi Nisbah Aspect
+                        </span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">
+                    Sesi ini membimbing guru menggunakan <strong>ChatGPT</strong> untuk mereka bentuk poster atau sepanduk sekolah dengan arahan visual yang jelas dan nisbah dimensi yang sesuai. Kaedah <strong>RTCC</strong> (<em>Role–Task–Context–Constraint</em>) digunakan supaya arahan lebih tersusun dan mudah diubah suai.
+                </p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center">
+                    <i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> Pelan Penyampaian Ceramah (16 Minit)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-emerald-600">Minit 0 – 3</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Membina visual dengan ChatGPT</div>
+                        <div class="text-xs text-slate-500 mt-1">Pengenalan kegunaan visual hebahan program sekolah.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-emerald-600">Minit 3 – 8</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Konsep Formula RTCC</div>
+                        <div class="text-xs text-slate-500 mt-1">Penerangan empat elemen RTCC dan cara menetapkan kekangan pada hasil visual.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-emerald-600">Minit 8 – 13</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Uji variasi</div>
+                        <div class="text-xs text-slate-500 mt-1">Mengubah saiz menegak poster vs melintang sepanduk (--ar 3:4 / --ar 16:9).</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-emerald-600">Minit 13 – 16</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Soal Jawab Teknikal</div>
+                        <div class="text-xs text-slate-500 mt-1">Sesi perbincangan resolusi imej & muat turun.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-1">Formula ChatGPT: RTCC</h3>
+                    <p class="text-xs text-slate-500">Kaedah Role-Task-Context-Constraint menterjemah idea guru secara sistematik.</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs sm:text-sm overflow-x-auto">
+                    <div class="text-slate-400 mb-2 font-sans text-xs">Struktur RTCC Formula:</div>
+                    <div class="flex items-center space-x-1 sm:space-x-2 min-w-max">
+                        <span class="text-amber-400 font-bold">Formula RTCC</span> = 
+                        <span class="bg-blue-600 px-2.5 py-1 rounded font-bold">[Role (Peranan)]</span> +
+                        <span class="bg-emerald-600 px-2.5 py-1 rounded font-bold">[Task (Tugasan)]</span> +
+                        <span class="bg-purple-600 px-2.5 py-1 rounded font-bold">[Context (Konteks)]</span> +
+                        <span class="bg-rose-600 px-2.5 py-1 rounded font-bold">[Constraint (Kekangan)]</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="font-bold text-blue-900"><i class="fa-solid fa-user-gear mr-1"></i> Peranan (Role)</div>
+                        <div class="text-blue-800 mt-1">Peranan atau kepakaran yang diminta daripada ChatGPT (cth: pereka grafik acara profesional).</div>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div class="font-bold text-emerald-900"><i class="fa-solid fa-list-check mr-1"></i> Tugasan (Task)</div>
+                        <div class="text-emerald-800 mt-1">Arahan spesifik tentang objek/babak utama yang perlu divisualkan.</div>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="font-bold text-purple-900"><i class="fa-solid fa-bullseye mr-1"></i> Konteks (Context)</div>
+                        <div class="text-purple-800 mt-1">Gaya seni, suasana, & sasaran pemerhati (murid 13-17 tahun).</div>
+                    </div>
+                    <div class="p-3 bg-rose-50 rounded-lg border border-rose-200">
+                        <div class="font-bold text-rose-900"><i class="fa-solid fa-ban mr-1"></i> Kekangan (Constraint)</div>
+                        <div class="text-rose-800 mt-1">Pantang larang teknikal (cth: larang tulisan, nisbah menegak/melintang).</div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl relative shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-xs font-semibold text-emerald-400">
+                            <i class="fa-solid fa-flask mr-1"></i> Contoh situasi: Guru Sains (Poster Karnival STEM Sekolah)
+                        </div>
+                        <button onclick="copyToClipboard('chatgpt-prompt-text')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                            <i class="fa-regular fa-copy mr-1"></i> Salin Prompt
+                        </button>
+                    </div>
+
+                    <div id="chatgpt-prompt-text" class="font-mono text-xs sm:text-sm leading-relaxed space-y-3">
+                        <p class="text-slate-400">Salin prompt RTCC ini ke ChatGPT:</p>
+                        <p class="p-2.5 rounded bg-blue-950/60 border border-blue-800/50"><span class="text-blue-400 font-bold">[Peranan]:</span> Bertindak sebagai pereka grafik acara profesional.</p>
+                        <p class="p-2.5 rounded bg-emerald-950/60 border border-emerald-800/50"><span class="text-emerald-400 font-bold">[Tugasan]:</span> Hasilkan reka bentuk latar belakang untuk poster Karnival STEM Sekolah. Visualkan sebuah roket yang sedang dilancarkan dari sebuah buku yang terbuka, dikelilingi oleh ikon-ikon sains holografik seperti mikroskop, atom, dan gear.</p>
+                        <p class="p-2.5 rounded bg-purple-950/60 border border-purple-800/50"><span class="text-purple-400 font-bold">[Konteks]:</span> Gaya seni adalah ilustrasi 3D yang moden dan bertenaga. Mood visual ini mestilah ceria, futuristik, dan memberi inspirasi untuk menarik perhatian murid berumur 13 hingga 17 tahun.</p>
+                        <p class="p-2.5 rounded bg-rose-950/60 border border-rose-800/50"><span class="text-rose-400 font-bold">[Kekangan]:</span> Pastikan nisbah aspek adalah menegak (--ar 3:4). Jangan jana sebarang teks, huruf, atau perkataan pada imej. Pastikan 1/3 ruang di bahagian atas dibiarkan kosong (negative space gelap) untuk memudahkan teks butiran program dimasukkan kemudian.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-sesi3" class="tab-content hidden space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">SESI 3</span>
+                            <span class="text-xs text-slate-500 font-medium">Masa: 16 Minit</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Canva – Perekaan Grafik Pantas</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg font-semibold text-slate-700">
+                            <i class="fa-solid fa-bullseye text-purple-500 mr-1"></i> Objektif: Grafik + tipografi Canva
+                        </span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">
+                    Sesi ini menggunakan Canva Magic Media untuk menghasilkan latar grafik, kemudian menggabungkannya dengan alat tipografi Canva untuk Pendidikan. Fokus utama ialah membina latar yang sesuai terlebih dahulu sebelum tajuk dan maklumat dimasukkan secara manual.
+                </p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center">
+                    <i class="fa-solid fa-list-check text-purple-600 mr-2"></i> Pelan Penyampaian Ceramah (16 Minit)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-purple-600">Minit 0 – 3</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Canva Magic Studio</div>
+                        <div class="text-xs text-slate-500 mt-1">Pengenalan ekosistem Canva untuk Pendidikan.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-purple-600">Minit 3 – 8</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Formula Latar Belakang</div>
+                        <div class="text-xs text-slate-500 mt-1">Penerangan empat elemen utama untuk membina latar visual.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-purple-600">Minit 8 – 13</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Praktikal Cantuman</div>
+                        <div class="text-xs text-slate-500 mt-1">Imej latar + tipografi + logo sekolah dalam Canva.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-purple-600">Minit 13 – 16</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Showcase Hasil</div>
+                        <div class="text-xs text-slate-500 mt-1">Sesi pembentangan ringkas hasil karya siap.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-1">Formula Canva Magic Media (Latar Grafik)</h3>
+                    <p class="text-xs text-slate-500">Formula empat elemen khas untuk latar grafik bahan bantu mengajar.</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs sm:text-sm overflow-x-auto">
+                    <div class="text-slate-400 mb-2 font-sans text-xs">Susunan prompt Canva:</div>
+                    <div class="flex items-center space-x-1 sm:space-x-2 min-w-max">
+                        <span class="text-amber-400 font-bold">Formula</span> = 
+                        <span class="bg-blue-600 px-2.5 py-1 rounded font-bold">[Objek Utama]</span> +
+                        <span class="bg-emerald-600 px-2.5 py-1 rounded font-bold">[Gaya Seni / Penapis]</span> +
+                        <span class="bg-purple-600 px-2.5 py-1 rounded font-bold">[Latar Belakang / Tekstur]</span> +
+                        <span class="bg-amber-600 px-2.5 py-1 rounded font-bold">[Tona Warna]</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="font-bold text-blue-900"><i class="fa-solid fa-cube mr-1"></i> Objek Utama</div>
+                        <div class="text-blue-800 mt-1">Benda/subjek fokus di tengah latar grafik.</div>
+                    </div>
+                    <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div class="font-bold text-emerald-900"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Gaya Seni / Penapis</div>
+                        <div class="text-emerald-800 mt-1">Gaya visual (cat air, anime, foto realistik, lakaran).</div>
+                    </div>
+                    <div class="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                        <div class="font-bold text-purple-900"><i class="fa-solid fa-border-all mr-1"></i> Latar / Tekstur</div>
+                        <div class="text-purple-800 mt-1">Corak/permukaan sekeliling (kertas lama, simen, corak geometri).</div>
+                    </div>
+                    <div class="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <div class="font-bold text-amber-900"><i class="fa-solid fa-eye-dropper mr-1"></i> Tona Warna</div>
+                        <div class="text-amber-800 mt-1">Suhu warna (hangat, sejuk, pastel, earth tones).</div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl relative shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-xs font-semibold text-purple-400">
+                            <i class="fa-solid fa-earth-americas mr-1"></i> Contoh situasi: Guru Geografi Tingkatan 3 (Modul Topografi)
+                        </div>
+                        <button onclick="copyToClipboard('canva-prompt-text')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                            <i class="fa-regular fa-copy mr-1"></i> Salin Prompt
+                        </button>
+                    </div>
+
+                    <div id="canva-prompt-text" class="font-mono text-xs sm:text-sm leading-relaxed space-y-3">
+                        <p class="text-slate-400">// Langkah 1: Masukkan Prompt ini ke Magic Media (Imej) Canva:</p>
+                        <p class="p-2.5 rounded bg-blue-950/60 border border-blue-800/50"><span class="text-blue-400 font-bold">[Objek Utama]:</span> Sebuah glob vintaj dan kompas loyang (brass compass) di atas meja kayu.</p>
+                        <p class="p-2.5 rounded bg-emerald-950/60 border border-emerald-800/50"><span class="text-emerald-400 font-bold">[Gaya Seni / Penapis]:</span> Fotografi realistik sinematik beresolusi tinggi (cinematic photography).</p>
+                        <p class="p-2.5 rounded bg-purple-950/60 border border-purple-800/50"><span class="text-purple-400 font-bold">[Latar Belakang / Tekstur]:</span> Sebuah peta topografi purba yang separuh tergulung sebagai latar belakang.</p>
+                        <p class="p-2.5 rounded bg-amber-950/60 border border-amber-800/50"><span class="text-amber-400 font-bold">[Tona Warna]:</span> Tona warna bumi (earth tones) yang hangat seperti coklat, hijau lumut, dan sepia.</p>
+
+                        <div class="pt-3 border-t border-slate-800 text-slate-300 text-xs font-sans">
+                            <span class="font-bold text-amber-400">// Langkah 2 (Di Kanvas Canva):</span>
+                            <ol class="list-decimal list-inside mt-1 space-y-1 text-slate-400">
+                                <li>Masukkan imej latar yang telah dijana ke dalam templat Canva.</li>
+                                <li>Tambah Kotak Teks (Text Box) di Canva untuk menaip tajuk: <strong class="text-white">"Modul Penguasaan Geografi Tingkatan 3"</strong>.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-sesi4" class="tab-content hidden space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">SESI 4</span>
+                            <span class="text-xs text-slate-500 font-medium">Masa: 16 Minit</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">Suno – Bahan Bantu Mengajar Berasaskan Lagu</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg font-semibold text-slate-700">
+                            <i class="fa-solid fa-bullseye text-amber-500 mr-1"></i> Objektif: Mnemonik Audio & Metatags Lirik
+                        </span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">
+                    Sesi ini membimbing guru mengubah fakta dan formula pelajaran yang sukar dihafal menjadi jingle atau lagu menggunakan <strong>Suno</strong>. Guru akan mempelajari cara memisahkan gaya muzik daripada lirik berstruktur dengan penanda seperti <code>[Verse]</code>, <code>[Chorus]</code> dan <code>[Outro]</code>.
+                </p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center">
+                    <i class="fa-solid fa-list-check text-amber-600 mr-2"></i> Pelan Penyampaian Ceramah (16 Minit)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-amber-600">Minit 0 – 3</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Audio Mnemonik</div>
+                        <div class="text-xs text-slate-500 mt-1">Kepentingan audio/lagu sebagai alat daya ingatan fakta.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-amber-600">Minit 3 – 8</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Seni Metatags Suno</div>
+                        <div class="text-xs text-slate-500 mt-1">Definisi Gaya Muzik & cara penulisan Metatags lirik.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-amber-600">Minit 8 – 13</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Demonstrasi penjanaan</div>
+                        <div class="text-xs text-slate-500 mt-1">Menghasilkan lagu Sains/Sejarah secara terus di Suno.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-amber-600">Minit 13 – 16</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Mendengar & Muat Turun</div>
+                        <div class="text-xs text-slate-500 mt-1">Sesi mendengar hasil audio dan kaedah eksport fail.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-1">Struktur Custom Mode (Suno)</h3>
+                    <p class="text-xs text-slate-500">Dua ruangan utama: Ruangan Prompt Gaya Muzik & Ruangan Prompt Lirik Berstruktur.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs">
+                        <div class="text-amber-400 font-bold mb-2">1. Formula Gaya Muzik (Style Prompt):</div>
+                        <div class="text-slate-300">
+                            <span class="text-blue-400">[Genre]</span> + <span class="text-emerald-400">[Tempo]</span> + <span class="text-purple-400">[Instrumen]</span> + <span class="text-rose-400">[Vokal]</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs">
+                        <div class="text-amber-400 font-bold mb-2">2. Metatags Lirik (Lyrics Structure):</div>
+                        <div class="text-slate-300">
+                            <span class="text-blue-400">[Verse]</span> (Fakta) &rarr; <span class="text-emerald-400">[Chorus]</span> (Mesej Utama) &rarr; <span class="text-rose-400">[Outro]</span> (Penutup)
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl relative shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-xs font-semibold text-amber-400">
+                            <i class="fa-solid fa-dna mr-1"></i> Contoh situasi: Guru Biologi/Sains (Penghafalan Fungsi Organel Sel)
+                        </div>
+                        <button onclick="copyToClipboard('suno-prompt-text')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                            <i class="fa-regular fa-copy mr-1"></i> Salin Prompt
+                        </button>
+                    </div>
+
+                    <div id="suno-prompt-text" class="font-mono text-xs sm:text-sm leading-relaxed space-y-4">
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
+                            <p class="text-amber-400 font-bold">Ruangan “Style of Music” di Suno:</p>
+                            <p class="text-slate-200">[Genre Muzik]: Pop Edukasi Kanak-Kanak</p>
+                            <p class="text-slate-200">[Tempo / Rentak]: Upbeat (120 BPM), rancak dan riang</p>
+                            <p class="text-slate-200">[Instrumen Utama]: Gitar Akustik dan Synthesizer</p>
+                            <p class="text-slate-200">[Jenis Vokal]: Vokal Lelaki yang jelas (Clear Male Vocal)</p>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+                            <p class="text-amber-400 font-bold">Ruangan “Lyrics” di Suno:</p>
+                            <p class="text-blue-300">[Verse]</p>
+                            <p class="text-slate-300 pl-3">Di dalam sel ada nukleus,<br>Pusat kawalan DNA kita,<br>Mitokondria jana tenaga,<br>Ribosom pula bina proteinnya.</p>
+                            <p class="text-emerald-300">[Chorus]</p>
+                            <p class="text-slate-300 pl-3">Inilah sel, unit asas kehidupan,<br>Sains Tingkatan 4 kita fahami bersama,<br>Dari sitoplasma hingga membran sel,<br>Semua fungsi ada peranan!</p>
+                            <p class="text-rose-300">[Outro]</p>
+                            <p class="text-slate-300 pl-3">Belajar Sains, senang dan ceria!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-sesi5" class="tab-content hidden space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-700">SESI 5</span>
+                            <span class="text-xs text-slate-500 font-medium">Masa: 16 Minit</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900 mt-1">NotebookLM (Google) – Penjanaan Podkas & Panduan Belajar</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-slate-100 px-3 py-1.5 rounded-lg font-semibold text-slate-700">
+                            <i class="fa-solid fa-bullseye text-rose-500 mr-1"></i> Objektif: Prompt berpandukan sumber
+                        </span>
+                    </div>
+                </div>
+                <p class="mt-4 text-slate-600 text-sm leading-relaxed">
+                    Sesi ini menunjukkan cara menggunakan <strong>NotebookLM</strong> untuk memproses nota atau fail DSKP (PDF) menjadi bahan bantu mengajar seperti kuiz KBAT, glosari dan perbincangan audio (<em>Audio Overview</em>). Pendekatan berpandukan sumber membantu memastikan jawapan dibina daripada dokumen yang dimuat naik.
+                </p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 class="font-bold text-slate-900 text-base mb-4 flex items-center">
+                    <i class="fa-solid fa-list-check text-rose-600 mr-2"></i> Pelan Penyampaian Ceramah (16 Minit)
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-rose-600">Minit 0 – 3</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Konsep Berpaksikan Sumber</div>
+                        <div class="text-xs text-slate-500 mt-1">Bagaimana NotebookLM menggunakan sumber yang dimuat naik.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-rose-600">Minit 3 – 8</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Formula Kuiz & Nota</div>
+                        <div class="text-xs text-slate-500 mt-1">Cara menulis prompt berpandukan dokumen untuk kuiz.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-rose-600">Minit 8 – 13</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Penyesuaian Audio Podkas</div>
+                        <div class="text-xs text-slate-500 mt-1">Demonstrasi menetapkan arahan penyesuaian untuk Audio Overview.</div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-rose-600">Minit 13 – 16</div>
+                        <div class="font-bold text-slate-800 text-sm mt-1">Integrasi Google Classroom</div>
+                        <div class="text-xs text-slate-500 mt-1">Penyepaduan podkas ke dalam PdP & rumusan bengkel.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg mb-1">Dua Struktur Utama NotebookLM</h3>
+                    <p class="text-xs text-slate-500">Formula penjanaan nota bertulis dan formula penyesuaian audio podkas (Audio Overview).</p>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs sm:text-sm">
+                    <div class="text-rose-400 font-bold mb-2">Formula 1: Source-Grounded Prompting (Nota & Kuiz)</div>
+                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                        <span class="bg-blue-600 px-2.5 py-1 rounded font-bold">[Konteks Sumber]</span> +
+                        <span class="bg-emerald-600 px-2.5 py-1 rounded font-bold">[Format Output]</span> +
+                        <span class="bg-amber-600 px-2.5 py-1 rounded font-bold">[Syarat Tambahan / Fokus]</span>
+                    </div>
+                </div>
+                <div class="bg-slate-900 p-4 rounded-xl text-white font-mono text-xs sm:text-sm">
+                    <div class="text-rose-400 font-bold mb-2">Formula 2: Customization Audio Podkas (2 Hos)</div>
+                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                        <span class="bg-purple-600 px-2.5 py-1 rounded font-bold">[Fokus Topik]</span> +
+                        <span class="bg-rose-600 px-2.5 py-1 rounded font-bold">[Nada / Peranan Hos]</span> +
+                        <span class="bg-teal-600 px-2.5 py-1 rounded font-bold">[Sasaran Pendengar]</span>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-slate-100 p-6 rounded-2xl relative shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-xs font-semibold text-rose-400">
+                            <i class="fa-solid fa-file-pdf mr-1"></i> Tindakan Awal: Muat naik fail "Nota_Bab1_Biologi_Tingkatan5.pdf"
+                        </div>
+                        <button onclick="copyToClipboard('notebooklm-prompt-text')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                            <i class="fa-regular fa-copy mr-1"></i> Salin Prompt
+                        </button>
+                    </div>
+
+                    <div id="notebooklm-prompt-text" class="font-mono text-xs sm:text-sm leading-relaxed space-y-4">
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+                            <p class="text-rose-400 font-bold">// A. Prompt Chat Bertulis (BBM / Kuiz KBAT):</p>
+                            <p class="p-2 rounded bg-blue-950/60 border border-blue-800/50"><span class="text-blue-400 font-bold">[Konteks Sumber]:</span> Berdasarkan nota Biologi Tingkatan 5 yang telah dimuat naik ini sahaja,</p>
+                            <p class="p-2 rounded bg-emerald-950/60 border border-emerald-800/50"><span class="text-emerald-400 font-bold">[Format Output]:</span> Hasilkan satu panduan belajar merangkumi 5 konsep paling utama, dan bina 5 soalan kuiz KBAT berserta skema jawapan.</p>
+                            <p class="p-2 rounded bg-amber-950/60 border border-amber-800/50"><span class="text-amber-400 font-bold">[Syarat Tambahan / Fokus]:</span> Jangan gunakan sebarang maklumat dari luar dokumen ini. Sila susun glosari bagi terma-terma saintifik yang sukar ke dalam bentuk jadual.</p>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+                            <p class="text-rose-400 font-bold">// B. Prompt Penyesuaian Audio (Audio Overview Customization):</p>
+                            <p class="p-2 rounded bg-purple-950/60 border border-purple-800/50"><span class="text-purple-400 font-bold">[Fokus Topik]:</span> Fokuskan perbincangan podkas ini kepada perbezaan antara proses Mitosis dan Meiosis sahaja.</p>
+                            <p class="p-2 rounded bg-rose-950/60 border border-rose-800/50"><span class="text-rose-400 font-bold">[Nada / Peranan Hos]:</span> Gunakan nada perbualan yang sangat santai, ceria dan memberi galakan, seolah-olah dua orang guru pakar sedang berbual.</p>
+                            <p class="p-2 rounded bg-teal-950/60 border border-teal-800/50"><span class="text-teal-400 font-bold">[Sasaran Pendengar]:</span> Gunakan bahasa yang mudah difahami oleh murid Tingkatan 4 yang akan menduduki ujian pada esok hari.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-studio" class="tab-content hidden space-y-8">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div class="border-b border-slate-100 pb-4 mb-6">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800">RUANG LATIHAN</span>
+                        <span class="text-xs text-slate-500 font-medium">Bina prompt anda sendiri</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 mt-1">Studio Bina Prompt Guru</h2>
+                    <p class="text-xs text-slate-500 mt-1">Pilih aplikasi dan isi maklumat yang diperlukan. Prompt akan dibina secara automatik untuk disalin dan digunakan.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Pilih aplikasi:</label>
+                            <select id="studio-tool-select" onchange="updateStudioForm()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                                <option value="gemini">Gemini (S-G-K-W-P-M) - Kulit Buku</option>
+                                <option value="chatgpt">ChatGPT (RTCC) - Poster/Sepanduk</option>
+                                <option value="canva">Canva (Magic Media) - Latar Grafik</option>
+                                <option value="suno">Suno - Lagu Mnemonik</option>
+                                <option value="notebooklm">NotebookLM - Source-Grounded Kuiz</option>
+                            </select>
+                        </div>
+                        <div id="studio-fields-container" class="space-y-3 pt-2">
+                        </div>
+                    </div>
+                    <div class="lg:col-span-7 flex flex-col justify-between bg-slate-900 text-slate-100 p-6 rounded-2xl shadow-lg border border-slate-800">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                                <span class="text-xs font-bold text-amber-400 flex items-center">
+                                    <i class="fa-solid fa-code mr-2"></i> Prompt yang dibina
+                                </span>
+                                <button onclick="copyToClipboard('studio-prompt-output')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300 transition-all">
+                                    <i class="fa-regular fa-copy mr-1"></i> Salin Prompt
+                                </button>
+                            </div>
+
+                            <div id="studio-prompt-output" class="font-mono text-xs sm:text-sm leading-relaxed whitespace-pre-wrap text-slate-200">
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                            <span><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Sedia untuk disalin ke aplikasi pilihan.</span>
+                            <span class="font-mono text-[10px] text-slate-500">Dikemas kini serta-merta</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-6 text-xs text-center mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-semibold text-slate-300">Modul Ceramah & Bengkel Kejuruteraan Prompt untuk Pendidik Sekolah Menengah</p>
+            <p class="mt-1 text-slate-500">Masa keseluruhan: 80 minit • 5 sesi x 16 minit &bull; Hak Cipta Terpelihara &copy; 2026</p>
+        </div>
+    </footer>
+    <div id="toast" class="fixed bottom-5 right-5 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-bold transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-50">
+        <i class="fa-solid fa-circle-check text-base"></i>
+        <span id="toast-msg">Prompt berjaya disalin ke papan klip!</span>
+    </div>
+    <script>
+        // Tab Switcher Logic
+        function switchTab(tabId) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Reset all tab button styles
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                btn.classList.add('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-200/60');
+            });
+
+            // Show selected content
+            const activeContent = document.getElementById('tab-' + tabId);
+            if (activeContent) activeContent.classList.remove('hidden');
+
+            // Highlight active button
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-600', 'hover:text-slate-900', 'hover:bg-slate-200/60');
+                activeBtn.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+            }
+
+            // Scroll top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Copy Clipboard Helper
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            const textToCopy = el.innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast("Prompt berjaya disalin ke papan klip!");
+            }).catch(err => {
+                showToast("Ralat semasa menyalin!");
+            });
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.innerText = message;
+            
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+            }, 2500);
+        }
+
+        // Highlight Prompt Component Tags Interactively
+        function highlightTag(tagKey, session) {
+            if(session === 'gemini') {
+                const elements = ['gem-subjek', 'gem-gaya', 'gem-komposisi', 'gem-warna', 'gem-cahaya', 'gem-mood'];
+                elements.forEach(id => {
+                    const target = document.getElementById(id);
+                    if (target) target.classList.remove('ring-2', 'ring-amber-400', 'scale-[1.02]');
+                });
+
+                const activeTarget = document.getElementById('gem-' + tagKey);
+                if (activeTarget) {
+                    activeTarget.classList.add('ring-2', 'ring-amber-400', 'scale-[1.02]');
+                    activeTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+
+        // Initialize Chart.js Visualizations
+        document.addEventListener("DOMContentLoaded", () => {
+            initTimeChart();
+            initCapabilityChart();
+            updateStudioForm();
+        });
+
+        function initTimeChart() {
+            const ctx = document.getElementById('timeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sesi 1: Gemini (16m)', 'Sesi 2: ChatGPT (16m)', 'Sesi 3: Canva (16m)', 'Sesi 4: Suno (16m)', 'Sesi 5: NotebookLM (16m)'],
+                    datasets: [{
+                        data: [16, 16, 16, 16, 16],
+                        backgroundColor: [
+                            '#2563eb', // Gemini Blue
+                            '#059669', // ChatGPT Emerald
+                            '#9333ea', // Canva Purple
+                            '#d97706', // Suno Amber
+                            '#e11d48'  // NotebookLM Rose
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 10, family: 'Plus Jakarta Sans' },
+                                boxWidth: 12
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initCapabilityChart() {
+            const ctx = document.getElementById('capabilityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Visual Naratif', 'Poster & Banner', 'Grafik Pantas', 'Lagu Mnemonik', 'Nota Bebas Halusinasi'],
+                    datasets: [{
+                        label: 'Kesesuaian Tugasan Guru (%)',
+                        data: [95, 90, 88, 92, 98],
+                        backgroundColor: '#2563eb',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 9 },
+                                callback: function(value) {
+                                    let label = this.getLabelForValue(value);
+                                    return label.length > 16 ? label.substring(0, 16) + '...' : label;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // DYNAMIC STUDIO PROMPT BUILDER
+        // ==========================================
+        const studioConfigs = {
+            gemini: {
+                fields: [
+                    { id: 'subjek', label: '[Subjek] Utama', placeholder: 'cth: Siluet pahlawan Melayu memegang keris memandang pelabuhan', type: 'text' },
+                    { id: 'gaya', label: '[Gaya Seni]', placeholder: 'cth: Vektor digital moden / Cat air / 3D Render', type: 'text' },
+                    { id: 'komposisi', label: '[Komposisi/Susun Atur]', placeholder: 'cth: Ruang kosong negative space di 1/3 bahagian atas', type: 'text' },
+                    { id: 'warna', label: '[Skema Warna]', placeholder: 'cth: Emas, coklat gelap dan biru indigo', type: 'text' },
+                    { id: 'cahaya', label: '[Pencahayaan]', placeholder: 'cth: Cahaya matahari terbit (golden hour)', type: 'text' },
+                    { id: 'mood', label: '[Mood Visual]', placeholder: 'cth: Gah, patriotik, dan premium', type: 'text' }
+                ],
+                generator: (f) => `Jana satu gambaran visual terperinci (image prompt) untuk kulit buku modul berdasarkan spesifikasi ini:\n\n[Subjek]: ${f.subjek || '...'}\n[Gaya Seni]: ${f.gaya || '...'}\n[Komposisi/Susun Atur]: ${f.komposisi || '...'}\n[Skema Warna]: ${f.warna || '...'}\n[Pencahayaan]: ${f.cahaya || '...'}\n[Mood]: ${f.mood || '...'}`
+            },
+            chatgpt: {
+                fields: [
+                    { id: 'role', label: '[Peranan]', placeholder: 'cth: Pereka grafik acara profesional', type: 'text' },
+                    { id: 'task', label: '[Tugasan] Visual', placeholder: 'cth: Latar belakang poster Karnival STEM, roket dilancarkan dari buku', type: 'text' },
+                    { id: 'context', label: '[Konteks & Sasaran]', placeholder: 'cth: Gaya 3D moden, mood futuristik untuk murid 13-17 tahun', type: 'text' },
+                    { id: 'constraint', label: '[Kekangan & Aspect Ratio]', placeholder: 'cth: --ar 3:4. Jangan jana sebarang teks/tulisan pada imej.', type: 'text' }
+                ],
+                generator: (f) => `[Peranan]: ${f.role || '...'}\n[Tugasan]: ${f.task || '...'}\n[Konteks]: ${f.context || '...'}\n[Kekangan]: ${f.constraint || '...'}`
+            },
+            canva: {
+                fields: [
+                    { id: 'objek', label: '[Objek Utama]', placeholder: 'cth: Glob vintaj dan kompas loyang atas meja kayu', type: 'text' },
+                    { id: 'gaya', label: '[Gaya Seni / Penapis]', placeholder: 'cth: Fotografi realistik sinematik beresolusi tinggi', type: 'text' },
+                    { id: 'latar', label: '[Latar Belakang / Tekstur]', placeholder: 'cth: Peta topografi purba separuh tergulung', type: 'text' },
+                    { id: 'tona', label: '[Tona Warna]', placeholder: 'cth: Earth tones hangat (coklat, hijau lumut)', type: 'text' }
+                ],
+                generator: (f) => `[Objek Utama]: ${f.objek || '...'}\n[Gaya Seni / Penapis]: ${f.gaya || '...'}\n[Latar Belakang / Tekstur]: ${f.latar || '...'}\n[Tona Warna]: ${f.tona || '...'}`
+            },
+            suno: {
+                fields: [
+                    { id: 'genre', label: '[Genre & Tempo Muzik]', placeholder: 'cth: Pop Edukasi Kanak-Kanak, Upbeat 120 BPM', type: 'text' },
+                    { id: 'vokal', label: '[Instrumen & Vokal]', placeholder: 'cth: Gitar Akustik dan Synthesizer, Clear Male Vocal', type: 'text' },
+                    { id: 'verse', label: 'Lirik [Verse]', placeholder: 'cth: Di dalam sel ada nukleus, Pusat kawalan DNA kita...', type: 'text' },
+                    { id: 'chorus', label: 'Lirik [Chorus]', placeholder: 'cth: Inilah sel unit asas kehidupan...', type: 'text' }
+                ],
+                generator: (f) => `// Ruangan Style of Music:\n[Genre Muzik]: ${f.genre || '...'}\n[Vokal & Instrumen]: ${f.vokal || '...'}\n\n// Ruangan Lyrics:\n[Verse]\n${f.verse || '...'}\n\n[Chorus]\n${f.chorus || '...'}\n\n[Outro]\nBelajar seronok bersama!`
+            },
+            notebooklm: {
+                fields: [
+                    { id: 'sumber', label: '[Konteks Sumber]', placeholder: 'cth: Berdasarkan dokumen PDF DSKP yang dimuat naik ini sahaja', type: 'text' },
+                    { id: 'format', label: '[Format Output]', placeholder: 'cth: Hasilkan 5 soalan kuiz KBAT berserta skema jawapan dan jadual glosari', type: 'text' },
+                    { id: 'fokus', label: '[Syarat Tambahan / Fokus]', placeholder: 'cth: Jangan guna maklumat luar. Fokus Bab 1 sahaja.', type: 'text' }
+                ],
+                generator: (f) => `[Konteks Sumber]: ${f.sumber || '...'}\n[Format Output]: ${f.format || '...'}\n[Syarat Tambahan / Fokus]: ${f.fokus || '...'}`
+            }
+        };
+
+        function updateStudioForm() {
+            const toolSelect = document.getElementById('studio-tool-select').value;
+            const config = studioConfigs[toolSelect];
+            const container = document.getElementById('studio-fields-container');
+            
+            container.innerHTML = '';
+
+            config.fields.forEach(field => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">${field.label}:</label>
+                    <input type="text" id="input-${field.id}" oninput="compileStudioPrompt()" placeholder="${field.placeholder}" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                `;
+                container.appendChild(div);
+            });
+
+            compileStudioPrompt();
+        }
+
+        function compileStudioPrompt() {
+            const toolSelect = document.getElementById('studio-tool-select').value;
+            const config = studioConfigs[toolSelect];
+            const formData = {};
+
+            config.fields.forEach(field => {
+                const inputEl = document.getElementById('input-' + field.id);
+                formData[field.id] = inputEl ? inputEl.value : '';
+            });
+
+            const outputText = config.generator(formData);
+            document.getElementById('studio-prompt-output').innerText = outputText;
+        }
+    </script>
+</body>
+</html>
